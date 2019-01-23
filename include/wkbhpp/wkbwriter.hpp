@@ -51,20 +51,14 @@ namespace wkbhpp {
 
     class wkb_error : public std::runtime_error {
 
-        std::string m_message;
-
     public:
 
         explicit wkb_error(const std::string& message) :
-            std::runtime_error(message),
-            m_message(message) {
-        }
-
-        const char* what() const noexcept override {
-            return m_message.c_str();
+            std::runtime_error(message) {
         }
 
     }; // class geometry_error
+
     enum class wkb_type : bool {
         wkb  = false,
         ewkb = true
