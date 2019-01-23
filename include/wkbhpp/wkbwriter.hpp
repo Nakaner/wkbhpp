@@ -43,10 +43,9 @@ DEALINGS IN THE SOFTWARE.
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <stdexcept>
 #include <string>
-
-#include <iostream>
 
 namespace wkbhpp {
 
