@@ -1,12 +1,5 @@
-/*
- * wkbwriter.hpp
- *
- *  Created on:  2018-12-14
- *      Author: Michael Reichert <michael.reichert@geofabrik.de>
- */
-
-#ifndef INCLUDE_WKBWRITER_HPP_
-#define INCLUDE_WKBWRITER_HPP_
+#ifndef WKBHPP_WKBWRITER_HPP
+#define WKBHPP_WKBWRITER_HPP
 
 /*
 
@@ -40,6 +33,12 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 */
+
+#define WKBHPP_VERSION_MAJOR 0
+#define WKBHPP_VERSION_MINOR 1
+#define WKBHPP_VERSION_PATCH 0
+
+#define WKBHPP_VERSION_STRING "0.1.0"
 
 #include <algorithm>
 #include <cstddef>
@@ -322,4 +321,4 @@ namespace wkbhpp {
 
 
 
-#endif /* INCLUDE_WKBWRITER_HPP_ */
+#endif /* WKBHPP_WKBWRITER_HPP */
