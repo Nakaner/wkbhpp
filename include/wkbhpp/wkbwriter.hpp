@@ -34,11 +34,24 @@ DEALINGS IN THE SOFTWARE.
 
 */
 
+// macros for version
 #define WKBHPP_VERSION_MAJOR 0
 #define WKBHPP_VERSION_MINOR 1
 #define WKBHPP_VERSION_PATCH 0
 
 #define WKBHPP_VERSION_STRING "0.1.0"
+
+// macros for endianess (taken from Libosmium)
+// Windows is only available for little endian architectures
+// http://stackoverflow.com/questions/6449468/can-i-safely-assume-that-windows-installations-will-always-be-little-endian
+#if defined(__FreeBSD__)
+# include <sys/endian.h>
+#elif !defined(_WIN32) && !defined(__APPLE__)
+# include <endian.h>
+#else
+# define __LITTLE_ENDIAN 1234
+# define __BYTE_ORDER __LITTLE_ENDIAN
+#endif
 
 #include <algorithm>
 #include <cstddef>
