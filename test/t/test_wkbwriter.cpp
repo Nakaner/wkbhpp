@@ -5,11 +5,8 @@
 #include <array>
 #include <string>
 
-constexpr int char_size = 1;
-constexpr int uint32_size = 4;
-constexpr int double_size = 8;
 constexpr int chars_per_byte = 2;
-constexpr int point_size = 2 * double_size;
+constexpr int point_size = 2 * sizeof(double);
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 
@@ -20,11 +17,11 @@ constexpr int point_size = 2 * double_size;
  * @param offset offset/2 from beginning where the number should be located
  * (offset is multiplied by 2 in the implementation because HEX strings need two characters per byte)
  */
-template <typename TNumber, size_t TWidth>
-TNumber hex_to_number(const std::string& hex, const size_t offset) {
+template <typename T>
+T hex_to_number(const std::string& hex, const size_t offset) {
     // first convert our ASCII HEX representation to bytes
-    std::array<unsigned char, TWidth> data;
-    for (unsigned char i = 0; i < TWidth; ++i) {
+    std::array<unsigned char, sizeof(T)> data;
+    for (unsigned char i = 0; i < sizeof(T); ++i) {
         unsigned char digit = 0;
         for (unsigned char j = 0; j < chars_per_byte; ++j) {
             unsigned char c = hex.at(offset * chars_per_byte + i * chars_per_byte + j);
@@ -44,54 +41,54 @@ TNumber hex_to_number(const std::string& hex, const size_t offset) {
         data[i] = digit;
     }
     // now read it as double
-    TNumber result = *(reinterpret_cast<TNumber*>(data.data()));
+    T result = *(reinterpret_cast<T*>(data.data()));
     return result;
 }
 
-const auto get_double_at = hex_to_number<double, double_size>;
+const auto get_double_at = hex_to_number<double>;
 
-const auto get_uint32_t_at = hex_to_number<uint32_t, uint32_size>;
+const auto get_uint32_t_at = hex_to_number<uint32_t>;
 
-const auto get_char_at = hex_to_number<char, char_size>;
+const auto get_char_at = hex_to_number<char>;
 
-template <typename TNumber, size_t TWidth>
-void test_hex_to_number(const TNumber val, std::string garbage = "") {
+template <typename T>
+void test_hex_to_number(const T val, std::string garbage = "") {
     std::string mystr = garbage;
-    wkbhpp::str_push<TNumber>(mystr, val);
+    wkbhpp::str_push<T>(mystr, val);
     std::string hex = wkbhpp::convert_to_hex(mystr);
-    const TNumber x = hex_to_number<TNumber, TWidth>(hex, garbage.length());
+    const T x = hex_to_number<T>(hex, garbage.length());
     REQUIRE(x == val);
 }
 
 TEST_CASE("test hex_to_double") {
-    test_hex_to_number<double, double_size>(1);
-    test_hex_to_number<double, double_size>(-1);
-    test_hex_to_number<double, double_size>(15647567671474);
-    test_hex_to_number<double, double_size>(15647.567671474);
-    test_hex_to_number<double, double_size>(-1564756767.474);
-    test_hex_to_number<double, double_size>(100);
-    test_hex_to_number<double, double_size>(100, "/xk");
-    test_hex_to_number<double, double_size>(3.2);
-    test_hex_to_number<double, double_size>(-1564756767.474, "/rk");
-    test_hex_to_number<double, double_size>(15647567671474, "/sk");
+    test_hex_to_number<double>(1);
+    test_hex_to_number<double>(-1);
+    test_hex_to_number<double>(15647567671474);
+    test_hex_to_number<double>(15647.567671474);
+    test_hex_to_number<double>(-1564756767.474);
+    test_hex_to_number<double>(100);
+    test_hex_to_number<double>(100, "/xk");
+    test_hex_to_number<double>(3.2);
+    test_hex_to_number<double>(-1564756767.474, "/rk");
+    test_hex_to_number<double>(15647567671474, "/sk");
 }
 
 TEST_CASE("test hex_to_uint32_t") {
-    test_hex_to_number<uint32_t, uint32_size>(0);
-    test_hex_to_number<uint32_t, uint32_size>(0, "hghdf");
-    test_hex_to_number<uint32_t, uint32_size>(1);
-    test_hex_to_number<uint32_t, uint32_size>(100);
-    test_hex_to_number<uint32_t, uint32_size>(100, "/xk");
-    test_hex_to_number<uint32_t, uint32_size>(156475674, "/sk");
+    test_hex_to_number<uint32_t>(0);
+    test_hex_to_number<uint32_t>(0, "hghdf");
+    test_hex_to_number<uint32_t>(1);
+    test_hex_to_number<uint32_t>(100);
+    test_hex_to_number<uint32_t>(100, "/xk");
+    test_hex_to_number<uint32_t>(156475674, "/sk");
 }
 
 TEST_CASE("test hex_to_char") {
-    test_hex_to_number<char, char_size>(0);
-    test_hex_to_number<char, char_size>(0, "hghdf");
-    test_hex_to_number<char, char_size>(1);
-    test_hex_to_number<char, char_size>(100);
-    test_hex_to_number<char, char_size>(100, "/xk");
-    test_hex_to_number<char, char_size>(250, "/sk");
+    test_hex_to_number<char>(0);
+    test_hex_to_number<char>(0, "hghdf");
+    test_hex_to_number<char>(1);
+    test_hex_to_number<char>(100);
+    test_hex_to_number<char>(100, "/xk");
+    test_hex_to_number<char>(250, "/sk");
 }
 
 std::string add_linestring_points(wkbhpp::WKBWriter& writer) {
@@ -112,7 +109,7 @@ TEST_CASE("WKB geometry factory (byte-order-dependent), point in WKB") {
     REQUIRE(Approx(get_double_at(wkb, 5)) == 3.2);
     // check first coordinate (byte offset: 13, length: 8)
     REQUIRE(Approx(get_double_at(wkb, 13)) == 4.2);
-    REQUIRE(wkb.length() == chars_per_byte * (char_size + uint32_size + point_size));
+    REQUIRE(wkb.length() == chars_per_byte * (sizeof(char) + sizeof(uint32_t) + point_size));
 }
 
 TEST_CASE("WKB geometry factory (byte-order-dependent), point in EWKB") {
@@ -126,7 +123,7 @@ TEST_CASE("WKB geometry factory (byte-order-dependent), point in EWKB") {
     REQUIRE(Approx(get_double_at(wkb, 9)) == 3.2);
     // check first coordinate (byte offset: 17, length: 8)
     REQUIRE(Approx(get_double_at(wkb, 17)) == 4.2);
-    REQUIRE(wkb.length() == chars_per_byte * (char_size + 2 * uint32_size + point_size));
+    REQUIRE(wkb.length() == chars_per_byte * (sizeof(char) + 2 * sizeof(uint32_t) + point_size));
 }
 
 TEST_CASE("WKB geometry factory (byte-order-dependent), point in web mercator WKB") {
@@ -136,7 +133,7 @@ TEST_CASE("WKB geometry factory (byte-order-dependent), point in web mercator WK
     REQUIRE(wkb.substr(0, 5 * chars_per_byte) == "0101000000");
     REQUIRE(Approx(get_double_at(wkb, 5)) == 356222);
     REQUIRE(Approx(get_double_at(wkb, 13)) == 467961);
-    REQUIRE(wkb.length() == chars_per_byte * (char_size + uint32_size + point_size));
+    REQUIRE(wkb.length() == chars_per_byte * (sizeof(char) + sizeof(uint32_t) + point_size));
 }
 
 TEST_CASE("WKB geometry factory (byte-order-dependent), point in web mercator EWKB") {
@@ -146,7 +143,7 @@ TEST_CASE("WKB geometry factory (byte-order-dependent), point in web mercator EW
     REQUIRE(wkb.substr(0, 9 * chars_per_byte) == "0101000020110F0000");
     REQUIRE(Approx(get_double_at(wkb, 9)) == 356222);
     REQUIRE(Approx(get_double_at(wkb, 17)) == 467961);
-    REQUIRE(wkb.length() == chars_per_byte * (char_size + 2 * uint32_size + point_size));
+    REQUIRE(wkb.length() == chars_per_byte * (sizeof(char) + 2 * sizeof(uint32_t) + point_size));
 }
 
 TEST_CASE("WKB geometry factory (byte-order-dependent): linestring in WKB") {
@@ -172,7 +169,7 @@ TEST_CASE("WKB geometry factory (byte-order-dependent): linestring in EPSG:4326 
     const std::string wkb{add_linestring_points(factory)};
     // WKB should look more or less like:
     // 0102000020E6100000030000009A99999999990940CDCCCCCCCCCC10400000000000000C40CDCCCCCCCCCC1240CDCCCCCCCCCC0C409A99999999991340
-    REQUIRE(wkb.length() == chars_per_byte * (char_size + 3 * uint32_size + 3 * point_size));
+    REQUIRE(wkb.length() == chars_per_byte * (sizeof(char) + 3 * sizeof(uint32_t) + 3 * point_size));
     REQUIRE(wkb.substr(0, 9 * chars_per_byte) == "0102000020E6100000");
     // endianess
     REQUIRE(get_char_at(wkb, 0) == 1);
