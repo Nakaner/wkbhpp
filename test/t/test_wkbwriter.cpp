@@ -48,41 +48,9 @@ TNumber hex_to_number(const std::string& hex, const size_t offset) {
     return result;
 }
 
-template <typename TNumber, size_t TWidth>
-TNumber hex_to_number_alternative(const std::string& hex, const size_t offset) {
-    // first convert our ASCII HEX representation to bytes
-    // first 48 positions can be skipped because ASCII values smaller 48 are neither are not alphanumeric
-    constexpr std::array<unsigned char, 55> lookup {0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-        // space between 57 ('9') and 65 ('A') is left unused
-        0, 0, 0, 0, 0, 0, 0, // ASCII 64
-        10, 11, 12, 13, 14, 15, // ASCII 70 ('F')
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // ASCII 80
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // ASCII 90
-        0, 0, 0, 0, 0, 0, // ASCII 96
-        10, 11, 12, 13, 14, 15 // ASCII 102 ('f')
-    };
-    std::array<unsigned char, TWidth> data;
-    for (unsigned char i = 0; i < TWidth; ++i) {
-        unsigned char digit = 0;
-        for (unsigned char j = 0; j < chars_per_byte; ++j) {
-            unsigned char c = hex.at(offset * chars_per_byte + i * chars_per_byte + j);
-            c = lookup[c - 48];
-            if (j == 0) {
-                digit += c * 16;
-            } else {
-                digit += c;
-            }
-        }
-        data[i] = digit;
-    }
-    // now read it as double
-    TNumber result = *(reinterpret_cast<TNumber*>(data.data()));
-    return result;
-}
-
 const auto get_double_at = hex_to_number<double, double_size>;
 
-const auto get_uint32_t_at = hex_to_number_alternative<uint32_t, uint32_size>;
+const auto get_uint32_t_at = hex_to_number<uint32_t, uint32_size>;
 
 const auto get_char_at = hex_to_number<char, char_size>;
 
