@@ -20,9 +20,8 @@ constexpr int point_size = 2 * sizeof(double);
 template <typename T>
 T hex_to_number(const std::string& hex, const size_t offset) {
     // first convert our ASCII HEX representation to bytes
-    std::array<unsigned char, sizeof(T)> data;
+    std::array<unsigned char, sizeof(T)> data = {}; // initialize with zeros
     for (unsigned char i = 0; i < sizeof(T); ++i) {
-        unsigned char digit = 0;
         for (unsigned char j = 0; j < chars_per_byte; ++j) {
             unsigned char c = hex.at(offset * chars_per_byte + i * chars_per_byte + j);
             if (c >= '0' && c <= '9') {
@@ -33,16 +32,14 @@ T hex_to_number(const std::string& hex, const size_t offset) {
                 c = c - 97 + 10;
             }
             if (j == 0) {
-                digit += c * 16;
+                data[i] += c * 16;
             } else {
-                digit += c;
+                data[i] += c;
             }
         }
-        data[i] = digit;
     }
     // now read it as double
-    T result = *(reinterpret_cast<T*>(data.data()));
-    return result;
+    return *(reinterpret_cast<T*>(data.data()));
 }
 
 const auto get_double_at = hex_to_number<double>;
